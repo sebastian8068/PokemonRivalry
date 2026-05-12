@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Pokémon Rivalry · Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="brand-corner">
+    <div class="brand-icon">
+      <i class="fas fa-shield-halved" style="transform: rotate(-6deg);"></i>
+    </div>
+    <h1>Pokémon <span>Rivalry</span></h1>
+  </div>
+
+  <!-- Tarjeta de acceso -->
+  <div class="rivalry-card" style="position: relative;">
+    
+    <!-- Pestañas -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabLoginBtn">
+        <i class="fas fa-arrow-right-to-bracket"></i> Login
+      </button>
+      <button class="tab-btn" id="tabSignupBtn">
+        <i class="fas fa-user-plus"></i> Sign up
+      </button>
+    </div>
+
+    <div class="form-container">
+      <!-- LOGIN -->
+      <form id="loginForm" class="auth-form">
+        <!-- Sin texto "trainer sign in" -->
+        <div class="input-group">
+          <i class="fas fa-user"></i>
+          <input type="text" id="loginUsername" placeholder="Username" autocomplete="username" required>
+        </div>
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" required>
+        </div>
+        <!-- Forgot password eliminado -->
+        <button type="submit" class="action-btn">
+          <i class="fas fa-sign-in-alt"></i> Log in
+        </button>
+      </form>
+
+      <!-- SIGNUP -->
+      <form id="signupForm" class="auth-form hidden">
+        <!-- Sin "new rival" -->
+        <div class="input-group">
+          <i class="fas fa-user-astronaut"></i>
+          <input type="text" id="signupUsername" placeholder="Choose username" autocomplete="off" required>
+        </div>
+        <div class="input-group">
+          <i class="fas fa-key"></i>
+          <input type="password" id="signupPassword" placeholder="Password" autocomplete="new-password" required>
+        </div>
+        <div class="input-group">
+          <i class="fas fa-check-circle"></i>
+          <input type="password" id="signupConfirm" placeholder="Confirm password" autocomplete="off" required>
+        </div>
+        <button type="submit" class="action-btn">
+          Create account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
