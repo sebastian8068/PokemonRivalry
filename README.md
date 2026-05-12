@@ -3,4 +3,4 @@ A turn‑based Pokémon battle web app. Pick your team, exploit type matchups, a
 
 ---
 
-For detailed documentation, check out the [Project Wiki](https://github.com/sebastian8068/pokemon-rivalry/wiki).
+For detailed documentation, check out the [Project Wiki](https://github.com/sebastian8068/pokemon_rivalry/wiki).
