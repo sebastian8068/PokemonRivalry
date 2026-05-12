@@ -1,5 +1,5 @@
 # Pokemon rivalry
-Web‑based Pokémon battles, just like [pokemon-showdown] (https://pokemonshowdown.com/)
+Web‑based Pokémon battles, just like [pokemon-showdown](https://pokemonshowdown.com)
 
 ---
 
