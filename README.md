@@ -1,5 +1,5 @@
 # Pokemon rivalry
-A turn‑based Pokémon battle web app. Pick your team, exploit type matchups, and fight online
+Web‑based Pokémon battles, just like [pokemon-showdown] (https://pokemonshowdown.com/)
 
 ---
 
