@@ -1,0 +1,167 @@
+CREATE OR REPLACE TABLE `Pokemon` (
+	`PokemonID` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+	`Name` VARCHAR(20) NOT NULL UNIQUE,
+	`Hp` SMALLINT NOT NULL,
+	`Attack` SMALLINT NOT NULL,
+	`Defense` SMALLINT NOT NULL,
+	`SpAtk` SMALLINT NOT NULL,
+	`SpDef` SMALLINT NOT NULL,
+	`Speed` SMALLINT NOT NULL,
+	`FrontSprite` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Relative path to the animated front sprite (GIF)',
+	`BackSprite` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Relative path to the animated back sprite (GIF)',
+	PRIMARY KEY(`PokemonID`)
+) COMMENT='Basic stats and name for pokemon';
+
+CREATE OR REPLACE TABLE `Type` (
+	`TypeID` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+	`Name` VARCHAR(10) NOT NULL UNIQUE,
+	PRIMARY KEY(`TypeID`)
+) COMMENT='Lookup table for the 18 elemental types';
+
+CREATE OR REPLACE TABLE `Type_pokemon` (
+	`PokemonID` INTEGER UNSIGNED NOT NULL,
+	`TypeID` INTEGER UNSIGNED NOT NULL,
+	PRIMARY KEY(`PokemonID`, `TypeID`)
+) COMMENT='Junction table to handle Pokémon with up to two types';
+
+CREATE OR REPLACE TABLE `Ability` (
+	`AbilityID` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+	`Name` VARCHAR(25) NOT NULL UNIQUE,
+	`Description` TEXT(65535) NOT NULL,
+	PRIMARY KEY(`AbilityID`)
+) COMMENT='Lookup table for Pokémon abilities and their in-game descriptions';
+
+CREATE OR REPLACE TABLE `Ability_pokemon` (
+	`PokemonID` INTEGER UNSIGNED NOT NULL,
+	`AbilityID` INTEGER UNSIGNED NOT NULL,
+	PRIMARY KEY(`PokemonID`, `AbilityID`)
+) COMMENT='Defines the pool of possible abilities for each species, including hidden abilities';
+
+CREATE OR REPLACE TABLE `Item` (
+	`ItemID` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+	`Name` VARCHAR(20) NOT NULL UNIQUE,
+	`Description` VARCHAR(100),
+	PRIMARY KEY(`ItemID`)
+) COMMENT='Lookup table for held items';
+
+CREATE OR REPLACE TABLE `User` (
+	`UserID` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+	`Name` VARCHAR(30) NOT NULL UNIQUE,
+	`Password` VARCHAR(255) NOT NULL,
+	`Score` INTEGER UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Player''s current battle ranking',
+	PRIMARY KEY(`UserID`)
+);
+
+CREATE OR REPLACE TABLE `Team` (
+	`TeamID` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+	`UserID` INTEGER UNSIGNED NOT NULL,
+	`Name` VARCHAR(50) NOT NULL,
+    `IsActive` BOOLEAN NOT NULL DEFAULT 0 COMMENT 'Indicates which of the user''s teams is currently active for battles.',
+	PRIMARY KEY(`TeamID`)
+) COMMENT='A named collection of up to 6 Pokémon owned by a specific user';
+
+
+CREATE OR REPLACE TABLE `Team_member` (
+	`TeamID` INTEGER UNSIGNED NOT NULL,
+	`Slot` TINYINT UNSIGNED NOT NULL,
+	`PokemonID` INTEGER UNSIGNED NOT NULL,
+	`NatureID` INTEGER UNSIGNED NOT NULL,
+	`ItemID` INTEGER UNSIGNED DEFAULT null,
+	`AbilityID` INTEGER UNSIGNED NOT NULL,
+	`HpEVs` TINYINT UNSIGNED NOT NULL,
+	`AttackEVs` TINYINT UNSIGNED NOT NULL,
+	`DefenseEVs` TINYINT UNSIGNED NOT NULL,
+	`SpAtkEVs` TINYINT UNSIGNED NOT NULL,
+	`SpDefEVs` TINYINT UNSIGNED NOT NULL,
+	`SpeedEVs` TINYINT UNSIGNED NOT NULL,
+	`Move1ID` INTEGER UNSIGNED DEFAULT null,
+	`Move2ID` INTEGER UNSIGNED DEFAULT null,
+	`Move3ID` INTEGER UNSIGNED DEFAULT null,
+	`Move4ID` INTEGER UNSIGNED DEFAULT null,
+	PRIMARY KEY(`TeamID`, `Slot`)
+) COMMENT='Individual Pokémon instance within a team, including EVs, chosen ability, held item, and 4 moves';
+
+CREATE OR REPLACE TABLE `Move` (
+	`MoveID` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+	`TypeID` INTEGER UNSIGNED NOT NULL,
+	`Name` VARCHAR(20) NOT NULL UNIQUE,
+	`Category` VARCHAR(10) NOT NULL COMMENT 'Damage class: ''Physical'', ''Special'', or ''Status''',
+	`PP` TINYINT UNSIGNED NOT NULL,
+	`Power` SMALLINT UNSIGNED COMMENT 'Base power of the move. NULL for non-damaging moves',
+	`Accuracy` SMALLINT UNSIGNED COMMENT 'Accuracy percentage. NULL for moves that never miss',
+	`Effect` TEXT(65535) NOT NULL COMMENT 'Description of the movement',
+	PRIMARY KEY(`MoveID`)
+) COMMENT='Lookup table for all battle moves, including power, accuracy, and priority';
+
+CREATE OR REPLACE TABLE `Move_pokemon` (
+	`PokemonID` INTEGER UNSIGNED NOT NULL,
+	`MoveID` INTEGER UNSIGNED NOT NULL,
+	PRIMARY KEY(`PokemonID`, `MoveID`)
+);
+
+CREATE OR REPLACE TABLE `Nature` (
+	`NatureID` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+	`Name` VARCHAR(10) UNIQUE NOT NULL,
+	`StatChanged` VARCHAR(15) NOT NULL COMMENT 'What stat changes in format (-St1, +St2) or nothing if the nature dosen''t change nothing',
+	PRIMARY KEY(`NatureID`)
+);
+
+ALTER TABLE `Team_member`
+ADD FOREIGN KEY(`TeamID`) REFERENCES `Team`(`TeamID`)
+ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE `Type_pokemon`
+ADD FOREIGN KEY(`PokemonID`) REFERENCES `Pokemon`(`PokemonID`)
+ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE `Type_pokemon`
+ADD FOREIGN KEY(`TypeID`) REFERENCES `Type`(`TypeID`)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE `Ability_pokemon`
+ADD FOREIGN KEY(`AbilityID`) REFERENCES `Ability`(`AbilityID`)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE `Ability_pokemon`
+ADD FOREIGN KEY(`PokemonID`) REFERENCES `Pokemon`(`PokemonID`)
+ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE `Team`
+ADD FOREIGN KEY(`UserID`) REFERENCES `User`(`UserID`)
+ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE `Team_member`
+ADD FOREIGN KEY(`ItemID`) REFERENCES `Item`(`ItemID`)
+ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE `Team_member`
+ADD FOREIGN KEY(`PokemonID`) REFERENCES `Pokemon`(`PokemonID`)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE `Move`
+ADD FOREIGN KEY(`TypeID`) REFERENCES `Type`(`TypeID`)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE `Move_pokemon`
+ADD FOREIGN KEY(`MoveID`) REFERENCES `Move`(`MoveID`)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE `Move_pokemon`
+ADD FOREIGN KEY(`PokemonID`) REFERENCES `Pokemon`(`PokemonID`)
+ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE `Team_member`
+ADD FOREIGN KEY(`NatureID`) REFERENCES `Nature`(`NatureID`)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE Team_member
+ADD FOREIGN KEY (PokemonID, AbilityID) REFERENCES Ability_pokemon (PokemonID, AbilityID)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE Team_member
+ADD FOREIGN KEY (PokemonID, Move1ID) REFERENCES Move_pokemon (PokemonID, MoveID)
+ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE Team_member
+ADD FOREIGN KEY (PokemonID, Move2ID) REFERENCES Move_pokemon (PokemonID, MoveID)
+ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE Team_member
+ADD FOREIGN KEY (PokemonID, Move3ID) REFERENCES Move_pokemon (PokemonID, MoveID)
+ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE Team_member
+ADD FOREIGN KEY (PokemonID, Move4ID) REFERENCES Move_pokemon (PokemonID, MoveID)
+ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE Team
+  ADD COLUMN ActiveFlag TINYINT GENERATED ALWAYS AS (
+    CASE WHEN IsActive = 1 THEN 1 ELSE NULL END
+  ) VIRTUAL;
+
+ALTER TABLE Team
+  ADD UNIQUE INDEX idx_unique_active_team (UserID, ActiveFlag);
