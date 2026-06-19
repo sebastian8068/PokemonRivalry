@@ -1,12 +1,10 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from src.controller.pages import router as page_router
+from src.controller.login.login import router as login
 
-app = FastAPI()
+app = FastAPI(title="Pokemon Rivalry")
+app.include_router(page_router)
+app.include_router(login, prefix="/auth")
 
 app.mount("/static_login", StaticFiles(directory="./src/view/"), name="view")
-
-
-@app.get("/")
-async def login():
-    return FileResponse("./src/view/login_demo/login_prototype.html")
