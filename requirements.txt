@@ -1,6 +1,7 @@
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.13.0
+asyncmy==0.2.11
 cachetools==7.1.4
 cffi==2.0.0
 click==8.4.1

@@ -7,4 +7,4 @@ app = FastAPI(title="Pokemon Rivalry")
 app.include_router(page_router)
 app.include_router(login, prefix="/auth")
 
-app.mount("/static_login", StaticFiles(directory="./src/view/"), name="view")
+app.mount("/static", StaticFiles(directory="./src/view/"), name="view")

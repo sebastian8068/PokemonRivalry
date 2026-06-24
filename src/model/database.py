@@ -1,7 +1,9 @@
-from typing import Annotated, AsyncGenerator
+from typing import Annotated
+from typing import AsyncGenerator
 from fastapi import Depends
 from dotenv import load_dotenv
 from os import getenv
+from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -22,7 +24,7 @@ DB_USER = _get_env("DB_USER")
 DB_PASSWORD = _get_env("DB_PASSWORD")
 DB_NAME = _get_env("DB_NAME")
 
-DB_DRIVER = getenv(key="DB_DRIVER", default="mariadb+mariadbconnector")
+DB_DRIVER = getenv(key="DB_DRIVER", default="mariadb+asyncmy")
 DB_ECHO = getenv(key="DB_ECHO", default="false").lower() == "true"
 
 
@@ -60,3 +62,22 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
+
+DB_DRIVER_BASE = getenv(
+    key="DB_DRIVER_BASE", default="mariadb+mariadbconnector"
+)
+
+URL_CONNECTION_BASE = URL.create(
+    drivername=DB_DRIVER_BASE,
+    username=DB_USER,
+    password=DB_PASSWORD,
+    host=DB_HOST,
+    database=DB_NAME,
+)
+
+"""
+This engine_base shoul ONLY be used for base.py file
+because the schema Base class need a synchronous
+engine
+"""
+engine_base = create_engine(URL_CONNECTION_BASE)
