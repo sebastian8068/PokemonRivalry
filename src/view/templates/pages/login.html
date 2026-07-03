@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Pokémon Rivalry · Access{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/login/style.css">
+{% endblock %}
+{% block content %}
+  {% include "components/brand.html" %}
+  <div class="rivalry-card" style="position: relative;">
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabLoginBtn">
+        <i class="fas fa-arrow-right-to-bracket"></i> Login
+      </button>
+      <button class="tab-btn" id="tabSignupBtn">
+        <i class="fas fa-user-plus"></i> Sign up
+      </button>
+    </div>
+    <div class="form-container">
+      <form id="loginForm" class="auth-form">
+        <div class="input-group">
+          <i class="fas fa-user"></i>
+          <input type="text" id="loginUsername" placeholder="Username" autocomplete="username" required>
+        </div>
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="action-btn">
+          <i class="fas fa-sign-in-alt"></i> Log in
+        </button>
+      </form>
+      <form id="signupForm" class="auth-form hidden">
+        <div class="input-group">
+          <i class="fas fa-user-astronaut"></i>
+          <input type="text" id="signupUsername" placeholder="Choose username" autocomplete="off" required>
+        </div>
+        <div class="input-group">
+          <i class="fas fa-key"></i>
+          <input type="password" id="signupPassword" placeholder="Password" autocomplete="new-password" required>
+        </div>
+        <div class="input-group">
+          <i class="fas fa-check-circle"></i>
+          <input type="password" id="signupConfirm" placeholder="Confirm password" autocomplete="off" required>
+        </div>
+        <button type="submit" class="action-btn">
+          Create account
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+{% block extra_scripts %}
+  <script src="/static/login/script.js"></script>
+{% endblock %}

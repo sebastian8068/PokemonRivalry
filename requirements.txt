@@ -11,9 +11,11 @@ greenlet==3.5.1
 gunicorn==26.0.0
 h11==0.16.0
 idna==3.18
+Jinja2==3.1.6
 mariadb==2.0.0rc2
 mariadb-binary==2.0.0rc2
 mariadb-pool==2.0.0rc2
+MarkupSafe==3.0.3
 packaging==26.2
 pycparser==3.0
 pydantic==2.13.4

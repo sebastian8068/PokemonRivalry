@@ -16,6 +16,6 @@ Nature = Base.classes.Nature
 Move = Base.classes.Move
 TypeTable = Base.classes.Type
 
-MovePokemon = Base.classes.Move_pokemon
-TypePokemon = Base.classes.Type_pokemon
-AbilityPokemon = Base.classes.Ability_pokemon
+# MovePokemon = Base.classes.Move_pokemon
+# TypePokemon = Base.classes.Type_pokemon
+# AbilityPokemon = Base.classes.Ability_pokemon
