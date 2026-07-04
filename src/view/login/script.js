@@ -68,7 +68,8 @@
         showError(inputEl, data.detail || 'Something went wrong');
         return;
       }
-      window.location.href = '/';
+      sessionStorage.setItem('token', data.access_token);
+      window.location.href = '/home';
     } catch {
       const inputEl = document.getElementById(type === 'login' ? 'loginUsername' : 'signupUsername');
       showError(inputEl, 'Network error');

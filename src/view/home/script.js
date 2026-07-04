@@ -1,4 +1,42 @@
 (function() {
+  const HOME = '/home';
+
+  async function checkAuth() {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/';
+      return null;
+    }
+    try {
+      const res = await fetch('/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        sessionStorage.removeItem('token');
+        window.location.href = '/';
+        return null;
+      }
+      return await res.json();
+    } catch {
+      window.location.href = '/';
+      return null;
+    }
+  }
+
+  async function init() {
+    const user = await checkAuth();
+    if (!user) return;
+
+    document.querySelector('.username').textContent = user.username;
+    document.querySelector('.score-badge').innerHTML =
+      `<i class="fas fa-star"></i> ${user.score}`;
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      sessionStorage.removeItem('token');
+      window.location.href = '/';
+    });
+  }
+
   const activeTeam = [
     { name: "Pikachu", color: "#EBCB8B" },
     { name: "Charizard", color: "#D08770" },
@@ -42,10 +80,6 @@
     randomAction.style.display = 'flex';
   }
 
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    alert('Logout (demo)');
-  });
-
   document.getElementById('findOpponentBtn').addEventListener('click', () => {
     alert('Searching random opponent... (demo)');
   });
@@ -61,4 +95,5 @@
 
   renderTeam();
   initModeSelector();
+  init();
 })();
