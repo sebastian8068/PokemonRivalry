@@ -82,5 +82,14 @@
   loginForm.addEventListener('submit', (e) => handleSubmit(e, 'login'));
   signupForm.addEventListener('submit', (e) => handleSubmit(e, 'signup'));
 
+  document.querySelectorAll('.toggle-pw').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.target);
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      btn.querySelector('i').className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
+    });
+  });
+
   setActiveTab('login');
 })();

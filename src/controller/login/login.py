@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from src.model.login.login_request import LoginRequest, SignUpRequest
@@ -11,6 +11,7 @@ from src.model.login.auth_service import (
 )
 from src.model.base import User
 from src.model.database import DbSession
+from src.model.login.rate_limiting import limiter
 
 router = APIRouter(tags=["login"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -38,7 +39,10 @@ async def get_current_user(
 
 
 @router.post("/signup")
-async def sign_up(data: SignUpRequest, response: Response, db: DbSession):
+@limiter.limit("5/hour")
+async def sign_up(
+    data: SignUpRequest, response: Response, db: DbSession, request: Request
+):
     if data.password != data.confirm_password:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -68,7 +72,10 @@ async def sign_up(data: SignUpRequest, response: Response, db: DbSession):
 
 
 @router.post("/login")
-async def login(data: LoginRequest, response: Response, db: DbSession):
+@limiter.limit("5/minute")
+async def login(
+    data: LoginRequest, response: Response, db: DbSession, request: Request
+):
     result = await db.execute(select(User).where(User.Name == data.username))
     user = result.scalar_one_or_none()
     if user is None or not verify_password(data.password, user.Password):

@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from pydantic import Field
 
 
 class LoginRequest(BaseModel):
@@ -7,6 +8,6 @@ class LoginRequest(BaseModel):
 
 
 class SignUpRequest(BaseModel):
-    username: str
-    password: str
-    confirm_password: str
+    username: str = Field(min_length=3, max_length=20)
+    password: str = Field(min_length=6, max_length=20)
+    confirm_password: str = Field(min_length=6, max_length=20)
