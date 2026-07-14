@@ -328,6 +328,8 @@ body {
   justify-content: space-between;
   gap: 1rem;
   box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+  text-decoration: none;
+  color: inherit;
 }
 
 .teambuilder-card:hover {
@@ -407,11 +409,19 @@ body {
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(136, 192, 208, 0.18);
   border-radius: 20px;
-  padding: 0.9rem 0.6rem;
-  width: 95px;
+  padding: 0.6rem 0.4rem;
+  width: 100px;
   text-align: center;
   border: 1px solid rgba(136, 192, 208, 0.2);
   transition: all 0.2s;
+}
+.pokemon-sprite {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  display: block;
+  margin: 0 auto 0.3rem;
 }
 
 .pokemon-card:hover {

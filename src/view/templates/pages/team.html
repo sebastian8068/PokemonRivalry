@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Pokémon Rivalry · Team Builder{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/team/styles.css">
+{% endblock %}
+{% block content %}
+<video autoplay muted loop playsinline id="bgVideo">
+  <source src="/static/home/pokemon_bg.mp4" type="video/mp4">
+</video>
+<div class="app-wrapper">
+  <header class="main-header">
+    {% include "components/brand.html" %}
+    <div class="user-panel">
+      <div class="user-info">
+        <i class="fas fa-user"></i>
+        <span class="username">{{ username }}</span>
+      </div>
+      <div class="score-badge">
+        <i class="fas fa-star"></i> {{ score }}
+      </div>
+      <a href="/home" class="back-home-btn">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
+  </header>
+
+  <!-- ========== TEAM LIST VIEW ========== -->
+  <div id="teamListView" class="team-list-view">
+    <div class="view-header">
+      <h2><i class="fas fa-people-group"></i> My Teams</h2>
+      <button id="newTeamBtn" class="primary-btn">
+        <i class="fas fa-plus"></i> New Team
+      </button>
+    </div>
+    <div id="teamListContainer" class="team-grid">
+      <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+    </div>
+  </div>
+
+  <!-- ========== TEAM EDITOR VIEW ========== -->
+  <div id="teamEditorView" class="team-editor-view" style="display:none;">
+    <div class="editor-header">
+      <button id="backToTeamsBtn" class="ghost-btn">
+        <i class="fas fa-arrow-left"></i> Back to teams
+      </button>
+      <div class="editor-title-row">
+        <input type="text" id="teamNameInput" class="team-name-input" maxlength="50" placeholder="Team name...">
+      </div>
+      <button id="saveTeamBtn" class="primary-btn save-btn" disabled>
+        <i class="fas fa-floppy-disk"></i> Save
+      </button>
+    </div>
+
+    <div class="pokemon-slots" id="pokemonSlots">
+      <!-- 6 slots rendered by JS -->
+    </div>
+
+    <!-- ===== POKEMON SELECTOR MODAL ===== -->
+    <div id="pokemonModal" class="modal-overlay" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Select Pokémon</h3>
+          <button class="modal-close" id="modalCloseBtn">&times;</button>
+        </div>
+        <input type="text" id="pokemonSearch" class="search-input" placeholder="Search Pokémon...">
+        <div id="pokemonGrid" class="pick-grid">
+          <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== GENERIC PICKER MODAL (item/ability/move/nature) ===== -->
+    <div id="pickerModal" class="modal-overlay" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="pickerTitle">Select</h3>
+          <button class="modal-close" id="pickerModalClose">&times;</button>
+        </div>
+        <input type="text" id="pickerSearch" class="search-input" placeholder="Search...">
+        <div id="pickerGrid" class="pick-grid">
+          <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== POKEMON DETAIL PANEL ===== -->
+    <div id="detailPanel" class="detail-panel" style="display:none;">
+      <div class="detail-header">
+        <h3 id="detailPokemonName">Pokémon</h3>
+        <span id="detailSlotLabel" class="slot-label">Slot 1</span>
+        <button id="removePokemonBtn" class="danger-btn">
+          <i class="fas fa-trash"></i> Remove
+        </button>
+      </div>
+      <div id="detailBody" class="detail-body">
+        <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+  <script src="/static/team/script.js"></script>
+{% endblock %}

@@ -37,24 +37,39 @@
     });
   }
 
-  const activeTeam = [
-    { name: "Pikachu", color: "#EBCB8B" },
-    { name: "Charizard", color: "#D08770" },
-    { name: "Greninja", color: "#88C0D0" },
-    { name: "Lucario", color: "#A3BE8C" },
-    { name: "Gardevoir", color: "#B48EAD" },
-    { name: "Garchomp", color: "#BF616A" }
-  ];
-
-  function renderTeam() {
+  async function renderActiveTeam() {
+    const token = sessionStorage.getItem('token');
     const container = document.getElementById('teamCards');
-    container.innerHTML = activeTeam.map(p => {
-      return `
-        <div class="pokemon-card" style="background: linear-gradient(135deg, ${p.color}40 0%, ${p.color}15 100%);">
-          <div class="pokemon-name">${p.name}</div>
-        </div>
-      `;
-    }).join('');
+    const section = document.querySelector('.active-team');
+    const header = document.querySelector('.active-team-header h3');
+    if (!token) return;
+
+    try {
+      const res = await fetch('/api/teams', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const teams = await res.json();
+      const active = teams.find(t => t.isActive);
+      if (!active) {
+        section.style.display = 'none';
+        return;
+      }
+      section.style.display = 'flex';
+      header.innerHTML = `<i class="fas fa-layer-group"></i> Active Team: ${active.name}`;
+
+      container.innerHTML = active.members.map(m => {
+        const name = m.pokemonName || 'Pokémon';
+        return `
+          <div class="pokemon-card">
+            <img class="pokemon-sprite" src="/static/${m.frontSprite}" alt="${name}">
+            <div class="pokemon-name">${name}</div>
+          </div>
+        `;
+      }).join('');
+    } catch {
+      section.style.display = 'none';
+    }
   }
 
   function initModeSelector() {
@@ -89,11 +104,6 @@
     alert('Challenge sent to ' + username);
   });
 
-  document.getElementById('teambuilderCard').addEventListener('click', () => {
-    alert('Team Builder (demo) – aquí construirías tu equipo');
-  });
-
-  renderTeam();
   initModeSelector();
-  init();
+  init().then(() => renderActiveTeam());
 })();
