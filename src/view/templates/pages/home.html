@@ -94,6 +94,23 @@
     </div>
   </div>
 </div>
+
+<div class="challenge-overlay" id="challengeOverlay" style="display:none;">
+  <div class="challenge-panel">
+    <div class="challenge-header">
+      <i class="fas fa-bolt"></i> Battle Request
+    </div>
+    <p class="challenge-text" id="challengeText">Player wants to battle you!</p>
+    <div class="challenge-buttons">
+      <button class="challenge-btn accept" id="challengeAccept">
+        <i class="fas fa-check"></i> Accept
+      </button>
+      <button class="challenge-btn decline" id="challengeDecline">
+        <i class="fas fa-times"></i> Decline
+      </button>
+    </div>
+  </div>
+</div>
 {% endblock %}
 {% block extra_scripts %}
   <script src="/static/home/script.js"></script>

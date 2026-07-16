@@ -1,5 +1,69 @@
 (function() {
-  const HOME = '/home';
+  let ws = null;
+  let searching = false;
+  let pendingChallengeFrom = null;
+
+  function connectWebSocket() {
+    const token = sessionStorage.getItem('token');
+    if (!token) return;
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${proto}//${location.host}/ws?token=${token}`);
+
+    ws.onopen = () => {};
+
+    ws.onmessage = (event) => {
+      let data;
+      try { data = JSON.parse(event.data); } catch { return; }
+
+      switch (data.type) {
+        case 'in_queue':
+          searching = true;
+          document.getElementById('findOpponentBtn').innerHTML =
+            '<i class="fas fa-spinner fa-pulse"></i> Searching...';
+          break;
+
+        case 'match_found':
+          searching = false;
+          window.location.href = `/battle?room=${data.room_id}`;
+          break;
+
+        case 'challenge_request':
+          pendingChallengeFrom = data.from;
+          document.getElementById('challengeText').textContent =
+            `${data.from} wants to battle you!`;
+          document.getElementById('challengeOverlay').style.display = 'flex';
+          break;
+
+        case 'challenge_accepted':
+          window.location.href = `/battle?room=${data.room_id}`;
+          break;
+
+        case 'challenge_declined':
+          alert(`${data.from} declined your challenge`);
+          break;
+
+        case 'user_online':
+          if (!data.online) {
+            alert('User is offline');
+          }
+          break;
+
+        case 'error':
+          alert(data.message);
+          break;
+      }
+    };
+
+    ws.onclose = () => {
+      if (searching) {
+        searching = false;
+        document.getElementById('findOpponentBtn').innerHTML =
+          '<i class="fas fa-play"></i> Find opponent';
+      }
+    };
+
+    ws.onerror = () => {};
+  }
 
   async function checkAuth() {
     const token = sessionStorage.getItem('token');
@@ -32,9 +96,12 @@
       `<i class="fas fa-star"></i> ${user.score}`;
 
     document.getElementById('logoutBtn').addEventListener('click', () => {
+      if (ws) ws.close();
       sessionStorage.removeItem('token');
       window.location.href = '/';
     });
+
+    connectWebSocket();
   }
 
   async function renderActiveTeam() {
@@ -95,13 +162,86 @@
     randomAction.style.display = 'flex';
   }
 
-  document.getElementById('findOpponentBtn').addEventListener('click', () => {
-    alert('Searching random opponent... (demo)');
+  async function checkActiveTeam() {
+    const token = sessionStorage.getItem('token');
+    if (!token) { window.location.href = '/'; return false; }
+    try {
+      const res = await fetch('/api/teams', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) { alert('Failed to check team'); return false; }
+      const teams = await res.json();
+      const active = teams.find(t => t.isActive);
+      if (!active) {
+        alert('You need an active team first!');
+        return false;
+      }
+      return true;
+    } catch {
+      alert('Error checking team');
+      return false;
+    }
+  }
+
+  document.getElementById('findOpponentBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (!await checkActiveTeam()) return;
+
+    if (searching) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({type: 'cancel_find'}));
+      }
+      searching = false;
+      document.getElementById('findOpponentBtn').innerHTML =
+        '<i class="fas fa-play"></i> Find opponent';
+      return;
+    }
+
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({type: 'find_opponent'}));
+    }
   });
 
-  document.getElementById('challengeBtn').addEventListener('click', () => {
-    const username = document.getElementById('rivalUsername').value;
-    alert('Challenge sent to ' + username);
+  document.getElementById('challengeBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (!await checkActiveTeam()) return;
+
+    const username = document.getElementById('rivalUsername').value.trim();
+    if (!username) {
+      alert('Enter a rival username');
+      return;
+    }
+
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({type: 'challenge', target: username}));
+    }
+  });
+
+  document.getElementById('challengeAccept').addEventListener('click', async () => {
+    if (!await checkActiveTeam()) return;
+    document.getElementById('challengeOverlay').style.display = 'none';
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({type: 'challenge_response', accepted: true}));
+    }
+    pendingChallengeFrom = null;
+  });
+
+  document.getElementById('challengeDecline').addEventListener('click', () => {
+    document.getElementById('challengeOverlay').style.display = 'none';
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({type: 'challenge_response', accepted: false}));
+    }
+    pendingChallengeFrom = null;
+  });
+
+  document.getElementById('challengeOverlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+      e.currentTarget.style.display = 'none';
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({type: 'challenge_response', accepted: false}));
+      }
+      pendingChallengeFrom = null;
+    }
   });
 
   document.getElementById('rankedCard').addEventListener('click', async () => {

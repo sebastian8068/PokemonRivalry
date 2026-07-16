@@ -602,6 +602,80 @@ body {
   font-size: 0.9rem;
 }
 
+/* ─────── Challenge Modal ─────── */
+.challenge-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.challenge-panel {
+  background: var(--nord0);
+  border: 1px solid rgba(136, 192, 208, 0.25);
+  border-radius: 25px;
+  padding: 1.8rem 2rem;
+  width: 90%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.challenge-header {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--nord13);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.challenge-text {
+  font-size: 0.95rem;
+  color: var(--nord5);
+  margin: 0;
+}
+.challenge-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+.challenge-btn {
+  padding: 0.7rem 2rem;
+  border-radius: 24px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.challenge-btn.accept {
+  background: var(--nord14);
+  color: var(--nord0);
+}
+.challenge-btn.accept:hover {
+  background: var(--nord7);
+  transform: translateY(-1px);
+}
+.challenge-btn.decline {
+  background: var(--nord2);
+  color: var(--nord11);
+  border: 1px solid var(--nord11);
+}
+.challenge-btn.decline:hover {
+  background: var(--nord11);
+  color: var(--nord6);
+}
+
 @media (max-width: 700px) {
   .app-wrapper {
     padding: 1rem;

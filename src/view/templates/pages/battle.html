@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Pokémon Rivalry · Battle{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/battle/styles.css">
+{% endblock %}
+{% block content %}
+<video autoplay muted loop playsinline id="bgVideo">
+  <source src="/static/home/pokemon_bg.mp4" type="video/mp4">
+</video>
+<div class="battle-wrapper">
+  <header class="battle-header">
+    {% include "components/brand.html" %}
+    <div class="battle-header-info">
+      <span class="battle-username" id="battleUsername"><i class="fas fa-user"></i> {{ username }}</span>
+      <button class="forfeit-btn" id="forfeitBtn">
+        <i class="fas fa-flag"></i> Forfeit
+      </button>
+    </div>
+  </header>
+
+  <div class="vs-bar">
+    <span class="vs-player-name" id="vsPlayerName"><i class="fas fa-user"></i> {{ username }}</span>
+    <span class="vs-divider"><i class="fas fa-bolt"></i> VS <i class="fas fa-bolt"></i></span>
+    <span class="vs-opponent-name" id="vsOpponentName"><i class="fas fa-user"></i> ???</span>
+  </div>
+
+  <div class="battle-layout">
+    <div class="battle-left">
+      <div class="battle-field">
+        <div class="field-row">
+          <div class="field-side player-side">
+            <div class="field-pokemon-info" id="playerInfo">
+              <span class="field-pokemon-name" id="playerName">?</span>
+              <div class="field-hp-bar">
+                <div class="field-hp-fill" id="playerHpFill"></div>
+              </div>
+              <span class="field-hp-text" id="playerHpText">100%</span>
+            </div>
+            <div class="field-sprite-container" id="playerSpriteContainer">
+              <img id="playerSprite" src="" alt="Your Pokémon" class="battle-sprite">
+            </div>
+          </div>
+
+          <div class="field-side opponent-side">
+            <div class="field-pokemon-info" id="opponentInfo">
+              <span class="field-pokemon-name" id="opponentName">?</span>
+              <div class="field-hp-bar">
+                <div class="field-hp-fill" id="opponentHpFill"></div>
+              </div>
+              <span class="field-hp-text" id="opponentHpText">100%</span>
+            </div>
+            <div class="field-sprite-container" id="opponentSpriteContainer">
+              <img id="opponentSprite" src="" alt="Opponent Pokémon" class="battle-sprite">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="battle-controls">
+        <div class="move-selector" id="moveSelector"></div>
+        <div class="party-bar" id="partyBar"></div>
+      </div>
+    </div>
+
+    <div class="battle-right">
+      <div class="battle-log" id="battleLog">
+        <div class="log-header">
+          <i class="fas fa-comment-dots"></i> Battle Log
+        </div>
+        <div class="log-content" id="logContent"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" placeholder="Send a message..." maxlength="200">
+          <button id="chatSendBtn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+  <script src="/static/battle/script.js"></script>
+{% endblock %}

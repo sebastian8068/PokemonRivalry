@@ -10,6 +10,27 @@ router = APIRouter(tags=["pages"])
 templates = Jinja2Templates(directory="src/view/templates")
 
 
+@router.get("/battle")
+async def battle_page(request: Request, db: DbSession):
+    token = request.cookies.get("access_token")
+    if not token:
+        return RedirectResponse(url="/")
+    token_data = decode_token(token)
+    if token_data is None or token_data.username is None:
+        return RedirectResponse(url="/")
+    result = await db.execute(
+        select(User).where(User.Name == token_data.username)
+    )
+    user = result.scalar_one_or_none()
+    if user is None:
+        return RedirectResponse(url="/")
+    return templates.TemplateResponse(
+        request,
+        "pages/battle.html",
+        {"request": request, "username": user.Name, "score": user.Score},
+    )
+
+
 @router.get("/")
 async def login_page(request: Request):
     return templates.TemplateResponse(
