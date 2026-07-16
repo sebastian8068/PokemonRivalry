@@ -104,6 +104,38 @@
     alert('Challenge sent to ' + username);
   });
 
+  document.getElementById('rankedCard').addEventListener('click', async () => {
+    const overlay = document.getElementById('rankedOverlay');
+    const list = document.getElementById('rankedList');
+    list.innerHTML = '<div class="ranked-loading">Loading...</div>';
+    overlay.style.display = 'flex';
+    try {
+      const res = await fetch('/api/leaderboard');
+      const data = await res.json();
+      list.innerHTML = data.length === 0
+        ? '<div class="ranked-empty">No players yet</div>'
+        : data.map((p, i) => `
+          <div class="ranked-entry${i < 3 ? ' top-three' : ''}">
+            <span class="ranked-pos">#${i + 1}</span>
+            <span class="ranked-name"><i class="fas fa-user"></i> ${p.username}</span>
+            <span class="ranked-score"><i class="fas fa-star"></i> ${p.score}</span>
+          </div>
+        `).join('');
+    } catch {
+      list.innerHTML = '<div class="ranked-empty">Failed to load</div>';
+    }
+  });
+
+  document.getElementById('rankedClose').addEventListener('click', () => {
+    document.getElementById('rankedOverlay').style.display = 'none';
+  });
+
+  document.getElementById('rankedOverlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+      e.currentTarget.style.display = 'none';
+    }
+  });
+
   initModeSelector();
   init().then(() => renderActiveTeam());
 })();

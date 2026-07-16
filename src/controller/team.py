@@ -366,6 +366,15 @@ async def list_moves(db: DbSession):
     ]
 
 
+@router.get("/api/leaderboard")
+async def leaderboard(db: DbSession):
+    result = await db.execute(
+        select(User).order_by(User.Score.desc()).limit(10)
+    )
+    users = result.scalars().all()
+    return [{"username": u.Name, "score": u.Score} for u in users]
+
+
 @router.get("/api/natures")
 async def list_natures(db: DbSession):
     result = await db.execute(select(Nature).order_by(Nature.Name))

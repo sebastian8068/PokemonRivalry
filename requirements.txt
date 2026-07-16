@@ -21,13 +21,16 @@ limits==5.8.0
 mariadb==2.0.0rc2
 mariadb-binary==2.0.0rc2
 mariadb-pool==2.0.0rc2
+markdown-it-py==4.2.0
 MarkupSafe==3.0.3
+mdurl==0.1.2
 packaging==26.2
 passlib==1.7.4
 pyasn1==0.6.3
 pycparser==3.0
 pydantic==2.13.4
 pydantic_core==2.46.4
+Pygments==2.20.0
 python-dotenv==1.2.2
 python-jose==3.5.0
 requests==2.34.2
@@ -41,4 +44,5 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 urllib3==2.7.0
 uvicorn==0.49.0
+websockets==16.1
 wrapt==2.2.2

@@ -11,6 +11,13 @@
   let slots = Array(6).fill(null);
   let pickerResolve = null;  // callback for generic picker modal
 
+  const STAT_ABBR = { attackEvs: 'Atk', defenseEvs: 'Def', spAtkEvs: 'SpA', spDefEvs: 'SpD', speedEvs: 'Spe' };
+
+  function parseStatChanged(str) {
+    const m = str && str.match(/\(-(\w+),\s*\+(\w+)\)/);
+    return m ? { dec: m[1], inc: m[2] } : { dec: null, inc: null };
+  }
+
   // ──── Auth ────
   async function checkAuth() {
     const token = sessionStorage.getItem('token');
@@ -404,6 +411,7 @@
     const namedItem = data.itemId ? itemsCatalog.find(i => i.itemId === data.itemId) : null;
     const namedAbility = data.abilityId ? slotAbilities.find(a => a.abilityId === data.abilityId) || abilitiesCatalog.find(a => a.abilityId === data.abilityId) : null;
     const namedNature = data.natureId ? naturesCatalog.find(n => n.natureId === data.natureId) : null;
+    const natureMod = namedNature ? namedNature.statChanged : null;
     const namedMoves = [1,2,3,4].map(i => {
       const id = data[`move${i}Id`];
       return id ? slotMoves.find(m => m.moveId === id) || movesCatalog.find(m => m.moveId === id) : null;
@@ -470,12 +478,12 @@
           <div class="ev-header">
             <span>Stat</span><span>Base</span><span>EVs</span><span></span><span>Total</span>
           </div>
-          ${makeEvRow('hpEvs', 'HP', base.hp, data.hpEvs)}
-          ${makeEvRow('attackEvs', 'Attack', base.attack, data.attackEvs)}
-          ${makeEvRow('defenseEvs', 'Defense', base.defense, data.defenseEvs)}
-          ${makeEvRow('spAtkEvs', 'Sp. Atk', base.spAtk, data.spAtkEvs)}
-          ${makeEvRow('spDefEvs', 'Sp. Def', base.spDef, data.spDefEvs)}
-          ${makeEvRow('speedEvs', 'Speed', base.speed, data.speedEvs)}
+          ${makeEvRow('hpEvs', 'HP', base.hp, data.hpEvs, natureMod)}
+          ${makeEvRow('attackEvs', 'Attack', base.attack, data.attackEvs, natureMod)}
+          ${makeEvRow('defenseEvs', 'Defense', base.defense, data.defenseEvs, natureMod)}
+          ${makeEvRow('spAtkEvs', 'Sp. Atk', base.spAtk, data.spAtkEvs, natureMod)}
+          ${makeEvRow('spDefEvs', 'Sp. Def', base.spDef, data.spDefEvs, natureMod)}
+          ${makeEvRow('speedEvs', 'Speed', base.speed, data.speedEvs, natureMod)}
         </div>
         <div class="ev-total">
           <span class="remaining-ok" id="evRemainingDisplay">remaining: ${remaining}</span>
@@ -536,7 +544,7 @@
         data[name] = val;
         const baseStat = base[statNames[name]] || 0;
         const totalEl = document.getElementById(`total-${name}`);
-        if (totalEl) totalEl.textContent = calcTotalStat(name, baseStat, val);
+        if (totalEl) totalEl.textContent = calcTotalStat(name, baseStat, val, natureMod);
         updateAll();
         updateEvDisplay(slotNum);
         updateSaveButton();
@@ -555,16 +563,28 @@
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  function calcTotalStat(evName, baseStat, evValue) {
+  function calcTotalStat(evName, baseStat, evValue, statChanged) {
+    let total;
     if (evName === 'hpEvs') {
-      return (baseStat * 2) + 141 + Math.floor(evValue / 4);
+      total = (baseStat * 2) + 141 + Math.floor(evValue / 4);
+    } else {
+      total = (baseStat * 2) + 36 + Math.floor(evValue / 4);
     }
-    return (baseStat * 2) + 36 + Math.floor(evValue / 4);
+    if (statChanged && evName !== 'hpEvs') {
+      const mods = parseStatChanged(statChanged);
+      const abbr = STAT_ABBR[evName];
+      if (abbr === mods.inc) {
+        total = Math.floor(total * 1.1);
+      } else if (abbr === mods.dec) {
+        total = Math.floor(total * 0.9);
+      }
+    }
+    return total;
   }
 
-  function makeEvRow(evName, label, baseStat, value) {
+  function makeEvRow(evName, label, baseStat, value, statChanged) {
     const clamped = Math.min(value, 252);
-    const total = calcTotalStat(evName, baseStat || 0, clamped);
+    const total = calcTotalStat(evName, baseStat || 0, clamped, statChanged);
     return `
       <div class="ev-row">
         <span class="ev-label">${label}</span>
