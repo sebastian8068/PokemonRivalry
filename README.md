@@ -52,38 +52,49 @@ Web-based Pokémon battle simulator inspired by [Pokémon Showdown](https://poke
 ## Use Cases
 
 ```mermaid
-usecaseDiagram
-    actor "Unregistered User" as UU
-    actor "Registered User" as RU
-    actor "System" as S
+flowchart LR
+    subgraph Actors["Actors"]
+        UU["Unregistered User"]
+        RU["Registered User"]
+        S["System"]
+    end
 
-    UU --> (Sign Up)
-    UU --> (Browse Pokémon Catalog)
-    UU --> (View Leaderboard)
+    subgraph UC1["Public Use Cases"]
+        UU -->|Sign Up| SU[(Sign Up)]
+        UU -->|Browse Catalog| BC[(Browse Pokémon Catalog)]
+        UU -->|View Leaderboard| VL[(View Leaderboard)]
+        RU -->|Log In| LI[(Log In)]
+        RU -->|Log Out| LO[(Log Out)]
+    end
 
-    RU --> (Log In)
-    RU --> (Log Out)
-    RU --> (Create Team)
-    RU --> (Edit Team)
-    RU --> (Delete Team)
-    RU --> (View My Teams)
-    RU --> (Join Battle Queue)
-    RU --> (Challenge Player)
-    RU --> (Accept Challenge)
-    RU --> (Battle)
-    RU --> (View Battle History)
-    RU --> (Chat During Battle)
+    subgraph UC2["Team Management"]
+        RU -->|Create Team| CT[(Create Team)]
+        RU -->|Edit Team| ET[(Edit Team)]
+        RU -->|Delete Team| DT[(Delete Team)]
+        RU -->|View My Teams| VT[(View My Teams)]
+    end
 
-    S --> (Authenticate User)
-    S --> (Validate Team)
-    S --> (Match Players)
-    S --> (Execute Turn)
-    S --> (Calculate Damage)
-    S --> (Apply Status Effects)
-    S --> (Update Score)
-    S --> (Persist Battle Result)
+    subgraph UC3["Battle"]
+        RU -->|Join Queue| JQ[(Join Battle Queue)]
+        RU -->|Challenge Player| CP[(Challenge Player)]
+        RU -->|Accept Challenge| AC[(Accept Challenge)]
+        RU -->|Battle| BW[(Battle)]
+        RU -->|Forfeit| FW[(Forfeit)]
+        RU -->|Chat| CH[(Chat During Battle)]
+        RU -->|View History| VH[(View Battle History)]
+    end
+
+    subgraph UC4["System Functions"]
+        S -->|Authenticate| AU[(Authenticate User)]
+        S -->|Validate| VTm[(Validate Team)]
+        S -->|Match| MP[(Match Players)]
+        S -->|Execute| ETu[(Execute Turn)]
+        S -->|Calculate| CD[(Calculate Damage)]
+        S -->|Apply| ASE[(Apply Status Effects)]
+        S -->|Update| US[(Update Score)]
+        S -->|Persist| PBR[(Persist Battle Result)]
+    end
 ```
-
 ---
 
 ## Quick Start
