@@ -196,7 +196,7 @@ pokemon_rivalry/
 
 ## Database
 
-14 tables power the application. See [DATABASE.md](DATABASE.md) for the full ER diagram and schema documentation.
+14 tables power the application. See [DataBase.md](./DataBase.md) for the full ER diagram and schema documentation.
 
 **Core tables:** `User`, `Team`, `Team_member`, `Pokemon`, `Move`, `Ability`, `Item`, `Nature`, `Type`
 
