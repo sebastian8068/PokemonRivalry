@@ -12,6 +12,16 @@
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('room');
 
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      if (m === '"') return '&quot;';
+      return '&#39;';
+    });
+  }
+
   function log(msg, className = 'log-action') {
     const content = document.getElementById('logContent');
     const entry = document.createElement('div');
@@ -69,19 +79,23 @@
     const container = document.getElementById('moveSelector');
     container.innerHTML = player.moves.map(m => {
       const typeIcon = `/static/sprites/types/${m.typeName.toLowerCase()}.png`;
+      const safeName = escapeHtml(m.name);
+      const safeTypeName = escapeHtml(m.typeName);
+      const safeCategory = escapeHtml(m.category || '');
+      const safeEffect = escapeHtml(m.effect || '');
       return `
         <button class="move-btn" data-move-id="${m.moveId}" ${waitingForOpponent || needSwitch ? 'disabled' : ''}>
-          <span class="move-name">${m.name}</span>
+          <span class="move-name">${safeName}</span>
           <div class="move-type-row">
-            <img class="move-type-icon" src="${typeIcon}" alt="${m.typeName}" width="48" height="18">
+            <img class="move-type-icon" src="${typeIcon}" alt="${safeTypeName}" width="48" height="18">
           </div>
           <div class="move-detail">
             <span>PP ${m.pp}</span>
             <span>${m.power ? 'Power ' + m.power : 'Power \u2014'}</span>
             <span>${m.accuracy ? 'Acc ' + m.accuracy : 'Acc \u2014'}</span>
-            <span class="move-category ${(m.category || '').toLowerCase()}">${m.category || ''}</span>
+            <span class="move-category ${(m.category || '').toLowerCase()}">${safeCategory}</span>
           </div>
-          <div class="move-effect">${m.effect || ''}</div>
+          <div class="move-effect">${safeEffect}</div>
         </button>
       `;
     }).join('');
@@ -107,10 +121,12 @@
     container.innerHTML = playerTeam.members.map(m => {
       const isActive = m.slot === currentSlot;
       const alive = m.hp > 0;
+      const safeName = escapeHtml(m.pokemonName);
+      const safeSprite = escapeHtml(m.frontSpritePNG);
       return `
         <div class="party-member ${isActive ? 'active' : ''} ${!alive ? 'fainted' : ''}" data-slot="${m.slot}">
-          <img src="/static/${m.frontSpritePNG}" alt="${m.pokemonName}" loading="lazy">
-          <span class="party-name">${m.pokemonName}</span>
+          <img src="/static/${safeSprite}" alt="${safeName}" loading="lazy">
+          <span class="party-name">${safeName}</span>
         </div>
       `;
     }).join('');
@@ -190,7 +206,7 @@
             currentSlot = playerTeam.members[0].slot;
           }
           document.getElementById('vsOpponentName').innerHTML =
-            `<i class="fas fa-user"></i> ${opponentUsername}`;
+            `<i class="fas fa-user"></i> ${escapeHtml(opponentUsername)}`;
           if (opponentTeam && opponentTeam.members && opponentTeam.members.length > 0) {
             const first = opponentTeam.members[0];
             first.hp = first.hp;
@@ -371,9 +387,9 @@
       if (meRes.ok) {
         const me = await meRes.json();
         document.getElementById('battleUsername').innerHTML =
-          `<i class="fas fa-user"></i> ${me.username}`;
+          `<i class="fas fa-user"></i> ${escapeHtml(me.username)}`;
         document.getElementById('vsPlayerName').innerHTML =
-          `<i class="fas fa-user"></i> ${me.username}`;
+          `<i class="fas fa-user"></i> ${escapeHtml(me.username)}`;
       }
     } catch {}
 
