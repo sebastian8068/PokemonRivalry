@@ -4,7 +4,7 @@ import os
 import mariadb
 import sys
 
-load_dotenv(Path(__file__).resolve().parents[3] / ".env")
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 DB_CONFIG = {
     "host": os.getenv("DB_HOST", "localhost"),

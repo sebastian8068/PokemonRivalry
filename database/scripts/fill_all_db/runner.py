@@ -1,13 +1,8 @@
-import sys
-
 from rich.console import Console
-from rich.panel import Panel
 from rich.table import Table
 from rich.progress import Progress, BarColumn, TextColumn
-from rich.prompt import Confirm
 from rich import box
 
-from db_connection import get_connection
 from add_types import load_types
 from add_natures import load_natures
 from add_abilities import load_abilities
@@ -20,70 +15,29 @@ from add_pokemons import (
     load_pokemon_moves,
 )
 
-TITLE = """
-▌ ▌   ▜               ▐
-▌▖▌▞▀▖▐ ▞▀▖▞▀▖▛▚▀▖▞▀▖ ▜▀ ▞▀▖
-▙▚▌▛▀ ▐ ▌ ▖▌ ▌▌▐ ▌▛▀  ▐ ▖▌ ▌
-▘ ▘▝▀▘ ▘▝▀ ▝▀ ▘▝ ▘▝▀▘  ▀ ▝▀
-▛▀▖   ▌               ▛▀▖▗       ▜
-▙▄▘▞▀▖▌▗▘▞▀▖▛▚▀▖▞▀▖▛▀▖▙▄▘▄ ▌ ▌▝▀▖▐ ▙▀▖▌ ▌
-▌  ▌ ▌▛▚ ▛▀ ▌▐ ▌▌ ▌▌ ▌▌▚ ▐ ▐▐ ▞▀▌▐ ▌  ▚▄▌
-▘  ▝▀ ▘ ▘▝▀▘▘▝ ▘▝▀ ▘ ▘▘ ▘▀▘ ▘ ▝▀▘ ▘▘  ▗▄▘
-"""
-
-DESCRIPTION = (
-    "Load all Pokémon data from local CSV files into the database.\n"
-    "Populates every table: types, natures, abilities, moves, items,\n"
-    "pokémon, and all their relationships."
-)
+TRUNCATE_TABLES = [
+    "Move_pokemon",
+    "Ability_pokemon",
+    "Type_pokemon",
+    "Pokemon",
+    "Team_member",
+    "Team",
+    "Item",
+    "Move",
+    "Ability",
+    "Nature",
+    "Type",
+]
 
 console = Console()
 
 
-def print_header():
-    console.print(Panel(TITLE, style="bold cyan", box=box.HEAVY))
-    console.print(Panel(DESCRIPTION, style="bold cyan", box=box.HEAVY))
-    console.print()
-
-
-
-
-
-def main():
-    print_header()
-
-    conn = get_connection()
-
-    if not Confirm.ask(
-        "[bold yellow]This will populate the entire database. Continue?",
-        default=True,
-    ):
-        conn.close()
-        console.print("[dim]Aborted.[/dim]")
-        return
-
-    if not Confirm.ask(
-        "[bold]Do you want to truncate all tables before loading?",
-        default=False,
-    ):
-        console.print("[dim]Keeping existing data. Duplicates will be skipped.[/dim]\n")
-    else:
+def fill_all(conn, truncate_first: bool = False):
+    if truncate_first:
         with console.status("[bold red]Truncating tables...", spinner="dots"):
             cursor = conn.cursor()
             cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
-            for table in [
-                "Move_pokemon",
-                "Ability_pokemon",
-                "Type_pokemon",
-                "Pokemon",
-                "Team_member",
-                "Team",
-                "Item",
-                "Move",
-                "Ability",
-                "Nature",
-                "Type",
-            ]:
+            for table in TRUNCATE_TABLES:
                 cursor.execute(f"TRUNCATE TABLE `{table}`")
             cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
             cursor.close()
@@ -167,9 +121,3 @@ def main():
     console.print("\n")
     console.print(summary)
     console.print("\n[bold green]✔ Database fully populated![/bold green]")
-
-    conn.close()
-
-
-if __name__ == "__main__":
-    main()

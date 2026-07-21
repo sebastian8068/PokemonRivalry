@@ -1,28 +1,7 @@
 from rich.console import Console
-from rich.panel import Panel
 from rich.table import Table
 from rich.prompt import Confirm
 from rich import box
-
-from db_connection import get_connection
-
-TITLE = """
-▌ ▌   ▜               ▐
-▌▖▌▞▀▖▐ ▞▀▖▞▀▖▛▚▀▖▞▀▖ ▜▀ ▞▀▖
-▙▚▌▛▀ ▐ ▌ ▖▌ ▌▌▐ ▌▛▀  ▐ ▖▌ ▌
-▘ ▘▝▀▘ ▘▝▀ ▝▀ ▘▝ ▘▝▀▘  ▀ ▝▀
-▛▀▖   ▌               ▛▀▖▗       ▜
-▙▄▘▞▀▖▌▗▘▞▀▖▛▚▀▖▞▀▖▛▀▖▙▄▘▄ ▌ ▌▝▀▖▐ ▙▀▖▌ ▌
-▌  ▌ ▌▛▚ ▛▀ ▌▐ ▌▌ ▌▌ ▌▌▚ ▐ ▐▐ ▞▀▌▐ ▌  ▚▄▌
-▘  ▝▀ ▘ ▘▝▀▘▘▝ ▘▝▀ ▘ ▘▘ ▘▀▘ ▘ ▝▀▘ ▘▘  ▗▄▘
-"""
-
-DESCRIPTION = (
-    "Removes all data from the Pokémon Rivalry database.\n"
-    "Truncates every table: users, teams, pokémon, moves, abilities, items, and more."
-)
-
-console = Console()
 
 TABLES = [
     "Team_member",
@@ -39,11 +18,7 @@ TABLES = [
     "Type",
 ]
 
-
-def print_header():
-    console.print(Panel(TITLE, style="bold cyan", box=box.HEAVY))
-    console.print(Panel(DESCRIPTION, style="bold cyan", box=box.HEAVY))
-    console.print()
+console = Console()
 
 
 def get_row_counts(cursor) -> dict[str, int]:
@@ -73,41 +48,7 @@ def show_table(counts: dict[str, int]):
     console.print()
 
 
-def main():
-    print_header()
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    counts = get_row_counts(cursor)
-    show_table(counts)
-
-    total = sum(counts.values())
-    console.print(
-        f"[bold red]⚠ Total rows to delete: {total:,}[/bold red]"
-    )
-    console.print(
-        "[red]This action is irreversible. All data will be permanently lost.[/red]\n"
-    )
-
-    if not Confirm.ask(
-        "[bold yellow]Are you sure you want to delete ALL data?",
-        default=False,
-    ):
-        console.print("[dim]Aborted.[/dim]")
-        cursor.close()
-        conn.close()
-        return
-
-    with console.status("[bold red]Truncating tables...", spinner="dots"):
-        cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
-        for table in TABLES:
-            cursor.execute(f"TRUNCATE TABLE `{table}`")
-        cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
-
-    console.print("[green]✔[/green] All tables truncated successfully!\n")
-
-    counts_after = get_row_counts(cursor)
+def show_table_after(counts: dict[str, int]):
     after = Table(
         title="[bold green]Clean slate[/bold green]",
         box=box.HEAVY,
@@ -118,14 +59,39 @@ def main():
     after.add_column("Status", style="bold green", justify="center")
 
     for t in TABLES:
-        after.add_row(t, str(counts_after[t]), "[green]✔ Truncated[/green]")
+        after.add_row(t, str(counts[t]), "[green]✔ Truncated[/green]")
 
     console.print(after)
+
+
+def truncate_all(conn) -> dict[str, int]:
+    cursor = conn.cursor()
+
+    counts = get_row_counts(cursor)
+    show_table(counts)
+    total = sum(counts.values())
+    console.print(f"[bold red]⚠ Total rows to delete: {total:,}[/bold red]")
+    console.print("[red]This action is irreversible. All data will be permanently lost.[/red]\n")
+
+    if not Confirm.ask(
+        "[bold yellow]Are you sure you want to delete ALL data?",
+        default=False,
+    ):
+        console.print("[dim]Aborted.[/dim]")
+        cursor.close()
+        return counts
+
+    with console.status("[bold red]Truncating tables...", spinner="dots"):
+        cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
+        for table in TABLES:
+            cursor.execute(f"TRUNCATE TABLE `{table}`")
+        cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
+
+    console.print("[green]✔[/green] All tables truncated successfully!\n")
+
+    counts_after = get_row_counts(cursor)
+    show_table_after(counts_after)
     console.print("\n[bold green]✔ Database is now empty![/bold green]")
 
     cursor.close()
-    conn.close()
-
-
-if __name__ == "__main__":
-    main()
+    return counts
