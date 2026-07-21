@@ -280,6 +280,10 @@
           if (data.yourActiveName) {
             const playerNameEl = document.getElementById('playerName');
             if (playerNameEl) playerNameEl.textContent = data.yourActiveName;
+            const playerMon = playerTeam && playerTeam.members.find(m => m.slot === data.yourActiveSlot);
+            if (playerMon) {
+              document.getElementById('playerSprite').src = `/static/${playerMon.backSpriteGIF}`;
+            }
           }
           if (data.opponentActiveName) {
             const oppNameEl = document.getElementById('opponentName');
@@ -312,11 +316,18 @@
 
         case 'opponent_switch':
           log(`Opponent switched to a new Pokémon!`, 'log-system');
+          waitingForOpponent = true;
+          setControlsEnabled(false);
+          const oppNewMon = opponentTeam && opponentTeam.members.find(m => m.slot === data.slot);
+          if (oppNewMon) {
+            renderOpponent(oppNewMon);
+          }
           break;
 
         case 'new_turn':
           waitingForOpponent = false;
           setControlsEnabled(true);
+          log('Turn ' + (data.turn || '?'), 'log-turn');
           renderMoves();
           renderPartyBar();
           break;
@@ -331,6 +342,10 @@
             log(`You lost! -${data.score_change} score (Total: ${data.new_score})`, 'log-system');
           }
           setTimeout(() => { window.location.href = '/home'; }, 4000);
+          break;
+
+        case 'chat_message':
+          log(`${data.from}: ${data.message}`, 'log-chat');
           break;
 
         case 'opponent_disconnected':
@@ -394,6 +409,20 @@
     } catch {}
 
     connectWebSocket();
+
+    const audio = document.getElementById('bgMusic');
+    if (audio) {
+      audio.volume = 0.3;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          document.addEventListener('click', function startAudio() {
+            audio.play().catch(function(){});
+            document.removeEventListener('click', startAudio);
+          }, { once: true });
+        });
+      }
+    }
   }
 
   window.updatePlayerHp = updatePlayerHp;

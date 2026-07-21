@@ -42,7 +42,8 @@ body {
 }
 
 .battle-wrapper {
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   padding: 1rem 1.5rem;
@@ -190,6 +191,7 @@ body {
   flex: 1;
   display: grid;
   grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr;
   gap: 1rem;
   min-height: 0;
 }
@@ -464,6 +466,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
 }
 
 .battle-log {
@@ -545,6 +548,18 @@ body {
   color: var(--nord7);
   border-left: 3px solid var(--nord7);
   font-style: italic;
+}
+
+.log-entry.log-turn {
+  color: var(--nord13);
+  font-weight: 700;
+  text-align: center;
+  background: rgba(235, 203, 139, 0.1);
+  border: 1px solid rgba(235, 203, 139, 0.2);
+  border-left: 3px solid var(--nord13);
+  font-style: normal;
+  letter-spacing: 1px;
+  padding: 0.5rem 0.6rem;
 }
 
 .chat-input-row {
