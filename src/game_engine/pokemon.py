@@ -124,6 +124,17 @@ class BattlePokemon:
             return False
         return True
 
+    def get_cannot_act_reason(self) -> str | None:
+        if self.status == StatusCondition.SLEEP and self._sleep_turns > 0:
+            return "sleep"
+        if self.status == StatusCondition.FREEZE:
+            return "freeze"
+        if self._flinch_turns > 0:
+            return "flinch"
+        if self.status == StatusCondition.PARALYZE and random.random() < 0.25:
+            return "paralyze"
+        return None
+
     def apply_end_of_turn_status(self) -> int:
         damage = 0
         if self.status == StatusCondition.BURN:

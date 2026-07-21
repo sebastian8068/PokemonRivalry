@@ -262,6 +262,10 @@
                 if (ev.fainted) {
                   log(`${ev.actor}'s Pokémon fainted!`, 'log-system');
                 }
+              } else if (ev.type === 'flinch') {
+                log(ev.text, 'log-system');
+              } else if (ev.type === 'stat_change') {
+                log(ev.text, 'log-system');
               } else if (ev.type === 'log') {
                 log(ev.text, 'log-system');
               }

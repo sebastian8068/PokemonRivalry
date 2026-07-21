@@ -264,6 +264,7 @@ class ConnectionManager:
         def _process_action(actor_name, action, attacker_mon, defender_mon, is_p1_attacker):
             nonlocal events
             action_type = action.get("type") if action else None
+            defender_name = p2_name if is_p1_attacker else p1_name
 
             if action_type == "move":
                 move_data = self._find_move_by_id(attacker_mon, action["moveId"])
@@ -276,6 +277,8 @@ class ConnectionManager:
                 final_dmg = 0
                 eff_value = 1.0
                 crit_happened = False
+                stat_change_events: list[dict] = []
+                flinch_turns = 0
 
                 if effects:
                     for effect in effects:
@@ -289,6 +292,21 @@ class ConnectionManager:
                         if result.crit:
                             crit_happened = True
                             events.append({"type": "critical", "text": "Critical hit!"})
+
+                        for stat, stages, target in result.stat_changes:
+                            target_name = actor_name if target == "self" else defender_name
+                            stat_name = stat.value.capitalize()
+                            if stages >= 2:
+                                msg = f"{target_name}'s {stat_name} sharply rose!"
+                            elif stages == 1:
+                                msg = f"{target_name}'s {stat_name} rose!"
+                            elif stages <= -2:
+                                msg = f"{target_name}'s {stat_name} harshly fell!"
+                            else:
+                                msg = f"{target_name}'s {stat_name} fell!"
+                            stat_change_events.append({"type": "stat_change", "text": msg})
+
+                        flinch_turns += result.flinch_turns
 
                     defender_mon.hp = defender_mon.pokemon.current_hp
                     if defender_mon.hp <= 0:
@@ -323,6 +341,10 @@ class ConnectionManager:
                     "crit": crit_happened,
                 })
 
+                events.extend(stat_change_events)
+                if flinch_turns > 0:
+                    events.append({"type": "flinch", "text": f"{defender_name} flinched!"})
+
             elif action_type == "switch":
                 new_slot = action["slot"]
                 if is_p1_attacker:
@@ -344,14 +366,28 @@ class ConnectionManager:
         p1_action = p1_move or {"type": "move", "moveId": 0}
         p2_action = p2_move or {"type": "move", "moveId": 0}
 
+        def _try_act(actor_name, action, attacker_mon, defender_mon, is_p1_attacker):
+            nonlocal events
+            reason = attacker_mon.pokemon.get_cannot_act_reason()
+            if reason:
+                if reason != "flinch":
+                    reason_messages = {
+                        "sleep": f"{actor_name}'s {attacker_mon.pokemon.name} is fast asleep!",
+                        "freeze": f"{actor_name}'s {attacker_mon.pokemon.name} is frozen solid!",
+                        "paralyze": f"{actor_name}'s {attacker_mon.pokemon.name} is paralyzed! It can't move!",
+                    }
+                    events.append({"type": "log", "text": reason_messages[reason]})
+                return
+            _process_action(actor_name, action, attacker_mon, defender_mon, is_p1_attacker)
+
         if first_is_p1:
-            _process_action(p1_name, p1_action, p1, p2, True)
+            _try_act(p1_name, p1_action, p1, p2, True)
             if not p2.fainted and not room.ended:
-                _process_action(p2_name, p2_action, p2, p1, False)
+                _try_act(p2_name, p2_action, p2, p1, False)
         else:
-            _process_action(p2_name, p2_action, p2, p1, False)
+            _try_act(p2_name, p2_action, p2, p1, False)
             if not p1.fainted and not room.ended:
-                _process_action(p1_name, p1_action, p1, p2, True)
+                _try_act(p1_name, p1_action, p1, p2, True)
 
         p1 = room.p1_mon[room.p1_active]
         p2 = room.p2_mon[room.p2_active]

@@ -130,6 +130,99 @@ def cmd_delete_user(name: str):
     conn.close()
 
 
+def cmd_set_pikachu_team():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    console.print("[bold]Setting up Pikachu team for all users...[/bold]\n")
+
+    cursor.execute("SELECT PokemonID FROM Pokemon WHERE Name = 'Pikachu'")
+    row = cursor.fetchone()
+    if not row:
+        console.print("[red]✖ Pikachu not found in database. Add it first (option 1).[/red]")
+        cursor.close()
+        conn.close()
+        return
+    pikachu_id = row[0]
+
+    cursor.execute("SELECT NatureID FROM Nature WHERE Name = 'Hardy'")
+    row = cursor.fetchone()
+    if not row:
+        console.print("[red]✖ Hardy nature not found.[/red]")
+        cursor.close()
+        conn.close()
+        return
+    nature_id = row[0]
+
+    cursor.execute("""
+        SELECT ap.AbilityID FROM Ability_pokemon ap
+        JOIN Ability a ON a.AbilityID = ap.AbilityID
+        WHERE ap.PokemonID = ? AND a.Name = 'Static'
+    """, (pikachu_id,))
+    row = cursor.fetchone()
+    if not row:
+        console.print("[red]✖ Pikachu has no Static ability registered in Ability_pokemon.[/red]")
+        cursor.close()
+        conn.close()
+        return
+    ability_id = row[0]
+
+    move_names = ["Thunderbolt", "Iron Tail", "Headbutt", "Nasty Plot"]
+    move_ids = []
+    for name in move_names:
+        cursor.execute("SELECT MoveID FROM Move WHERE Name = ?", (name,))
+        row = cursor.fetchone()
+        if not row:
+            console.print(f"[red]✖ Move '{name}' not found in database. Aborting.[/red]")
+            cursor.close()
+            conn.close()
+            return
+        move_id = row[0]
+        cursor.execute(
+            "INSERT IGNORE INTO Move_pokemon (PokemonID, MoveID) VALUES (?, ?)",
+            (pikachu_id, move_id),
+        )
+        move_ids.append(move_id)
+        console.print(f"  [green]✔[/green] {name} (ID: {move_id}) linked to Pikachu")
+
+    cursor.execute("SELECT UserID, Name FROM User")
+    users = cursor.fetchall()
+    if not users:
+        console.print("[yellow]No users found. Nothing to do.[/yellow]")
+        cursor.close()
+        conn.close()
+        return
+
+    console.print()
+    for user_id, user_name in users:
+        cursor.execute(
+            "INSERT INTO Team (UserID, Name, IsActive) VALUES (?, 'Pikachu Team', 1)",
+            (user_id,),
+        )
+        team_id = cursor.lastrowid
+
+        cursor.execute("""
+            INSERT INTO Team_member
+                (TeamID, Slot, PokemonID, NatureID, ItemID, AbilityID,
+                 HpEVs, AttackEVs, DefenseEVs, SpAtkEVs, SpDefEVs, SpeedEVs,
+                 Move1ID, Move2ID, Move3ID, Move4ID)
+            VALUES (?, 1, ?, ?, NULL, ?,
+                    0, 0, 0, 0, 0, 0,
+                    ?, ?, ?, ?)
+        """, (team_id, pikachu_id, nature_id, ability_id, *move_ids))
+
+        cursor.execute(
+            "UPDATE Team SET IsActive = 0 WHERE UserID = ? AND TeamID != ?",
+            (user_id, team_id),
+        )
+        console.print(f"  [green]✔[/green] Team for '{user_name}' (TeamID: {team_id})")
+
+    conn.commit()
+    console.print(f"\n[bold green]✔ Done! Pikachu team created for {len(users)} user(s).[/bold green]")
+    cursor.close()
+    conn.close()
+
+
 def run_interactive():
     TITLE = """
  ▌ ▌   ▜               ▐
@@ -139,7 +232,7 @@ def run_interactive():
  ▛▀▖   ▌               ▛▀▖▗       ▜
  ▙▄▘▞▀▖▌▗▘▞▀▖▛▚▀▖▞▀▖▛▀▖▙▄▘▄ ▌ ▌▝▀▖▐ ▙▀▖▌ ▌
  ▌  ▌ ▌▛▚ ▛▀ ▌▐ ▌▌ ▌▌ ▌▌▚ ▐ ▐▐ ▞▀▌▐ ▌  ▚▄▌
- ▘  ▝▀ ▘ ▘▝▀▘▘▝ ▘▝▀ ▘ ▘▘ ▘▀▘ ▘ ▝▀▘ ▘▘  ▗▄▘
+ ▘  ▝▀ ▘ ▘▝▀▘▘▝ ▘▝▀▘ ▘ ▘▘ ▘▀▘ ▘ ▝▀▘ ▘▘  ▗▄▘
 """
     DESCRIPTION = "Pokémon Rivalry — Unified Database Manager"
 
@@ -168,6 +261,7 @@ def run_interactive():
         console.print("  [cyan]3[/cyan]  Delete User")
         console.print("  [cyan]4[/cyan]  Fill All Data (from CSV)")
         console.print("  [cyan]5[/cyan]  Remove All Data")
+        console.print("  [cyan]6[/cyan]  Set Pikachu Team for all users")
         console.print("  [cyan]0[/cyan]  Exit")
 
         choice = IntPrompt.ask("\n[bold]Option", default=1)
@@ -259,6 +353,9 @@ def run_interactive():
         elif choice == 5:
             cmd_remove_all()
 
+        elif choice == 6:
+            cmd_set_pikachu_team()
+
         else:
             console.print("[red]Invalid option[/red]")
             continue
@@ -298,6 +395,8 @@ def main():
                 )
                 sys.exit(1)
             cmd_delete_user(args.name)
+        case "set-pikachu-team":
+            cmd_set_pikachu_team()
         case _:
             parser.print_help()
             sys.exit(1)
