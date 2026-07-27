@@ -25,4 +25,4 @@ Web‑based Pokémon battles, just like [pokemon-showdown](https://pokemonshowdo
 
 For detailed documentation, check out the [Project Wiki](https://github.com/sebastian8068/pokemon_rivalry/wiki).
 
-Special thanks to [PokéAPI](https://pokeapi.co/) for providing the Pokémon data.
+Special thanks to [PokéAPI](https://github.com/PokeAPI) for providing the Pokémon data.
